@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spotify Auth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green: #1DB954;
+            --green-hover: #1ed760;
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --text: #e8e8e8;
+            --text-muted: #7a7a7a;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(29,185,84,0.08) 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+            pointer-events: none;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+        .glow-2 {
+            top: auto; right: auto;
+            bottom: -300px; left: -200px;
+            animation-delay: -10s;
+            background: radial-gradient(circle, rgba(29,185,84,0.05) 0%, transparent 70%);
+        }
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, 30px) scale(1.1); }
+        }
+
+        #root { position: relative; z-index: 1; width: 100%; max-width: 460px; padding: 24px; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            padding: 48px 40px;
+            text-align: center;
+            animation: cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .logo-wrap {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(29,185,84,0.1); margin-bottom: 28px;
+        }
+        .logo-wrap svg { width: 36px; height: 36px; fill: var(--green); }
+
+        h1 { font-family: 'Space Mono', monospace; font-size: 1.6rem; letter-spacing: -0.02em; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 36px; line-height: 1.5; }
+
+        .btn-spotify {
+            display: inline-flex; align-items: center; gap: 12px;
+            background: var(--green); color: #000;
+            font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1rem;
+            padding: 16px 36px; border: none; border-radius: 999px;
+            cursor: pointer; transition: all 0.2s ease; text-decoration: none;
+        }
+        .btn-spotify:hover { background: var(--green-hover); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(29,185,84,0.25); }
+        .btn-spotify:active { transform: translateY(0); }
+        .btn-spotify svg { width: 22px; height: 22px; fill: #000; }
+
+        .profile { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--green); box-shadow: 0 0 40px rgba(29,185,84,0.15); }
+        .avatar-placeholder { width: 96px; height: 96px; border-radius: 50%; background: rgba(29,185,84,0.12); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; color: var(--green); border: 3px solid var(--green); }
+        .profile-name { font-family: 'Space Mono', monospace; font-size: 1.4rem; }
+        .profile-id { color: var(--text-muted); font-size: 0.85rem; font-family: 'Space Mono', monospace; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(29,185,84,0.1); color: var(--green); font-size: 0.8rem; font-weight: 500; padding: 6px 14px; border-radius: 999px; margin-top: 4px; }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+        .btn-logout { margin-top: 24px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; padding: 10px 24px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; }
+        .btn-logout:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(29,185,84,0.2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--text-muted); font-size: 0.9rem; margin-top: 12px; }
+        .footer { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 0.75rem; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div class="glow"></div>
+    <div class="glow glow-2"></div>
+    <div id="root"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => { fetchUser(); }, []);
+
+            async function fetchUser() {
+                try {
+                    const res = await fetch("/auth/me", { credentials: "include" });
+                    if (res.ok) setUser(await res.json());
+                } catch (err) {
+                    // not logged in
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            async function handleLogout() {
+                await fetch("/auth/logout", { method: "POST", credentials: "include" });
+                setUser(null);
+            }
+
+            function handleLogin() {
+                window.location.href = "/auth/login";
+            }
+
+            const SpotifyIcon = () => (
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            );
+
+            if (loading) return (
+                <div className="card">
+                    <div className="spinner"></div>
+                    <p className="loading-text">Завантаження...</p>
+                </div>
+            );
+
+            if (user) {
+                const initial = (user.display_name || user.spotify_id || "?")[0].toUpperCase();
+                return (
+                    <>
+                        <div className="card">
+                            <div className="profile">
+                                {user.avatar_url
+                                    ? <img className="avatar" src={user.avatar_url} alt={user.display_name} />
+                                    : <div className="avatar-placeholder">{initial}</div>
+                                }
+                                <div>
+                                    <div className="profile-name">{user.display_name || "Spotify User"}</div>
+                                    <div className="profile-id">@{user.spotify_id}</div>
+                                </div>
+                                <div className="badge">Підключено</div>
+                                <button className="btn-logout" onClick={handleLogout}>Вийти</button>
+                            </div>
+                        </div>
+                        <div className="footer">Spotify Auth App</div>
+                    </>
+                );
+            }
+
+            return (
+                <>
+                    <div className="card">
+                        <div className="logo-wrap"><SpotifyIcon /></div>
+                        <h1>Spotify Auth</h1>
+                        <p className="subtitle">Увійдіть через свій Spotify акаунт</p>
+                        <button className="btn-spotify" onClick={handleLogin}>
+                            <SpotifyIcon />
+                            Увійти через Spotify
+                        </button>
+                    </div>
+                    <div className="footer">Spotify Auth App</div>
+                </>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
